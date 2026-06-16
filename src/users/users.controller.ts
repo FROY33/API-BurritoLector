@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -13,7 +13,7 @@ export class UsersController {
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.USER)
     getAffinity(@Request() req: any, @Param('id', ParseIntPipe) otherUserId: number) {
-        const currentUserId = req.user.id;
+        const currentUserId = req.user.sub;
         return this.usersService.getAffinity(currentUserId, otherUserId);
     }
 }
