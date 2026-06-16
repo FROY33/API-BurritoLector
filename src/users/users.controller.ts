@@ -9,7 +9,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @Get('affinity')
+    @Get('affinity/:id')
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.USER)
     getAffinity(@Request() req: any, @Param('id', ParseIntPipe) otherUserId: number) {
