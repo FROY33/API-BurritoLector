@@ -13,7 +13,7 @@ export class UsersController {
     @UseGuards(AuthGuard, RolesGuard)
     @Roles(Role.USER)
     getAffinity(@Request() req: any, @Param('id', ParseIntPipe) otherUserId: number) {
-        const currentUserId = req.user.sub;
+        const currentUserId = req.sub;
         return this.usersService.getAffinity(currentUserId, otherUserId);
     }
 }
