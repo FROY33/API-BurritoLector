@@ -18,6 +18,11 @@ export class RatingController {
     return this.ratingService.create(createRatingDto);
   }
 
+  @Get('promedio')
+  getAverageRating() {
+    return this.ratingService.getPromedioRating();
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   findAll() {
@@ -53,8 +58,4 @@ export class RatingController {
     return this.ratingService.findByBookAndUser(bookId, userId);
   }*/
 
-  @Get('promedio')
-  getAverageRating() {
-    return this.ratingService.getPromedioRating();
-  }
 }

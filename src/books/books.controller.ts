@@ -22,6 +22,11 @@ export class BooksController {
     return this.booksService.create(dto, coverImage);
   }
 
+  @Get('contar')
+  contarLibros() {
+    return this.booksService.contarLibros();
+  }
+
   @Get()
   findAll(@Query() query: PaginationQueryDto) {
     return this.booksService.findAll(query);
@@ -45,10 +50,5 @@ export class BooksController {
   @Roles(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.booksService.remove(id);
-  }
-
-  @Get('contar')
-  contarLibros() {
-    return this.booksService.contarLibros();
   }
 }
