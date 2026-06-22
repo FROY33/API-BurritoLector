@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { RatingModule } from './rating/rating.module';
 import { BooksModule } from './books/books.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { BooksModule } from './books/books.module';
     synchronize: true,
     ssl: { rejectUnauthorized: false },
   }),
-    RatingModule,],
+    RatingModule,
+    UsersModule,],
     controllers: [AppController],
     providers: [AppService],
   })
