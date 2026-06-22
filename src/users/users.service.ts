@@ -5,14 +5,15 @@ import { User } from '../auth/entities/user.entity';
 import { Rating } from '../rating/entities/rating.entity';
 import { Book } from '../books/entities/book.entity';
 import { AffinityResponseDto } from './dto/affinity-response.dto';
+import { AffinityBookDto, SimilarBookDto } from './dto/affinity-book.dto';
 
-    interface CommonBook {
-        bookId: number;
-        title: string;
-        userScore: number;
-        otherUserScore: number;
-        scoreDifference: number;
-    }
+interface CommonBook {
+  bookId: number;
+  title: string;
+  userScore: number;
+  otherUserScore: number;
+  scoreDifference: number;
+}
 
 @Injectable()
 export class UsersService {
@@ -20,7 +21,7 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Rating) private readonly ratingRepository: Repository<Rating>,
     @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.userRepository.find();
@@ -115,6 +116,55 @@ export class UsersService {
         throw err;
       }
       throw new InternalServerErrorException('Error al calcular afinidad');
+    }
+  }
+
+  async getAffinityTable(currentUserId: number): Promise<SimilarBookDto[]> {
+    try {
+      // 1. Mis ratings
+      const myRatings = await this.ratingRepository.find({
+        where: { userId: currentUserId },
+      });
+
+      if (!myRatings.length) return [];
+
+      const myBookIds = new Set(myRatings.map(r => r.bookId));
+      const myScoreMap = new Map(myRatings.map(r => [r.bookId, r.score]));
+
+      // 2. Ratings de otros usuarios en los mismos libros
+      const otherRatings = await this.ratingRepository.find({
+        where: { bookId: In([...myBookIds]) },
+      });
+
+      const othersFiltered = otherRatings.filter(r => r.userId !== currentUserId);
+
+      if (!othersFiltered.length) return [];
+
+      // 3. Traer libros y usuarios involucrados
+      const bookIds = [...new Set(othersFiltered.map(r => r.bookId))];
+      const userIds = [...new Set(othersFiltered.map(r => r.userId))];
+
+      const [books, users] = await Promise.all([
+        this.bookRepository.findBy({ id: In(bookIds) }),
+        this.userRepository.findBy({ id: In(userIds) }),
+      ]);
+
+      const bookMap = new Map(books.map(b => [b.id, b.title]));
+      const userMap = new Map(users.map(u => [u.id, u.name])); // ajusta 'name' si tu campo es distinto
+
+      // 4. Construir filas
+      return othersFiltered.map(r => ({
+        bookId: r.bookId,
+        title: bookMap.get(r.bookId) ?? `Libro #${r.bookId}`,
+        lector: userMap.get(r.userId) ?? `Usuario #${r.userId}`,
+        userScore: myScoreMap.get(r.bookId) ?? 0,
+        otherUserScore: r.score,
+        scoreDifference: Math.abs((myScoreMap.get(r.bookId) ?? 0) - r.score),
+      }));
+
+    } catch (err) {
+      Logger.error({ message: 'Error en getAffinityTable', error: err, currentUserId }, 'UsersService');
+      throw new InternalServerErrorException('Error al obtener tabla de afinidad');
     }
   }
 }

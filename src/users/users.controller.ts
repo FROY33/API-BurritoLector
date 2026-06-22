@@ -19,4 +19,16 @@ export class UsersController {
         }
         return this.usersService.getAffinity(currentUserId, otherUserId);
     }
+
+    @Get('afinidad')
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.USER)
+getAffinityTable(@Request() req: any) {
+  const currentUserId = Number(req.user?.sub);
+  if (!currentUserId || Number.isNaN(currentUserId)) {
+    throw new BadRequestException('Usuario no autenticado');
+  }
+  return this.usersService.getAffinityTable(currentUserId);
+}
+
 }

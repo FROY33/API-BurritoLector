@@ -25,12 +25,7 @@ export class RatingService {
   }
 
   findAll() {
-    return this.ratingRepository.find({
-    relations: ['book', 'user'], 
-    select: {
-      user: { id: true, name: true } 
-    }
-  });
+    return this.ratingRepository.find();
   }
 
   findOne(id: number) {
