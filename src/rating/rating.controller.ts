@@ -12,8 +12,7 @@ export class RatingController {
   constructor(private readonly ratingService: RatingService) {}
 
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(AuthGuard)
   create(@Body() createRatingDto: CreateRatingDto) {
     return this.ratingService.create(createRatingDto);
   }
