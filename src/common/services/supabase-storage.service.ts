@@ -7,8 +7,8 @@ export class SupabaseStorageService {
   private supabaseClient: SupabaseClient;
 
   constructor() {
-    const supabaseUrl = process.env.DB_HOST;
-    const supabaseServiceKey = process.env.DB_PASSWORD;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error(
