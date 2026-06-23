@@ -46,7 +46,7 @@ export class BooksService {
         .replace(/\s+/g, '-')            // espacios a guiones
         .replace(/[^a-zA-Z0-9.-]/g, ''); // solo caracteres seguros
 
-      const filename = `book-covers/${Date.now()}-${safeName}`;
+      const filename = `${Date.now()}-${safeName}`;
       coverImageUrl = await this.supabaseStorageService.uploadFile(
         coverImage,
         'book-covers',
