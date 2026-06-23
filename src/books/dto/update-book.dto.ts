@@ -1,4 +1,5 @@
-import { IsArray, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UpdateBookDto {
   @IsOptional()
@@ -18,13 +19,9 @@ export class UpdateBookDto {
   synopsis?: string;
 
   @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
   @Max(5)
   adminScore?: number;
-
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  genreIds?: number[];
 }
