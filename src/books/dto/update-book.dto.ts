@@ -24,4 +24,8 @@ export class UpdateBookDto {
   @Min(1)
   @Max(5)
   adminScore?: number;
+
+  @IsOptional()
+  @IsString()
+  coverImageUrl!: string | null;
 }
