@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
-import { Genre } from '../genres/entities/genre.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
@@ -12,23 +11,16 @@ import { SupabaseStorageService } from '../common/services/supabase-storage.serv
 export class BooksService {
   constructor(
     @InjectRepository(Book) private readonly bookRepo: Repository<Book>,
-    @InjectRepository(Genre) private readonly genreRepo: Repository<Genre>,
     private readonly supabaseStorageService: SupabaseStorageService,
   ) {}
 
   async findAll(query: PaginationQueryDto) {
-    const { page = 1, limit = 10, search, genre } = query;
+    const { page = 1, limit = 10, search } = query;
 
-    const qb = this.bookRepo
-      .createQueryBuilder('book')
-      .leftJoinAndSelect('book.genres', 'genre');
+    const qb = this.bookRepo.createQueryBuilder('book');
 
     if (search) {
       qb.andWhere('book.title ILIKE :search', { search: `%${search}%` });
-    }
-
-    if (genre) {
-      qb.andWhere('genre.id = :genreId', { genreId: genre });
     }
 
     const [data, total] = await qb
@@ -45,8 +37,6 @@ export class BooksService {
   }
 
   async create(dto: CreateBookDto, coverImage?: Express.Multer.File): Promise<Book> {
-    const genres = await this.genreRepo.findBy({ id: In(dto.genreIds) });
-    
     let coverImageUrl: string | null = null;
     if (coverImage) {
       const timestamp = Date.now();
@@ -59,31 +49,26 @@ export class BooksService {
     }
 
     const book = this.bookRepo.create({
-      title: dto.title,
-      author: dto.author,
-      editor: dto.editor,
-      synopsis: dto.synopsis,
-      adminScore: dto.adminScore,
+      title:        dto.title,
+      author:       dto.author,
+      editor:       dto.editor,
+      synopsis:     dto.synopsis,
+      adminScore:   dto.adminScore,
       coverImageUrl,
-      genres,
     });
+
     return this.bookRepo.save(book);
   }
 
   async findOne(id: number): Promise<Book> {
-    const book = await this.bookRepo.findOne({
-      where: { id },
-      relations: { genres: true },
-    });
+    const book = await this.bookRepo.findOne({ where: { id } });
     if (!book) throw new NotFoundException('Libro no encontrado');
     return book;
   }
 
   async update(id: number, dto: UpdateBookDto, coverImage?: Express.Multer.File): Promise<Book> {
     const book = await this.findOne(id);
-    const { genreIds, ...scalar } = dto;
-    
-    // manejo de la nueva imagen de portada para el libro
+
     if (coverImage) {
       const timestamp = Date.now();
       const filename = `${timestamp}-${coverImage.originalname}`;
@@ -93,11 +78,8 @@ export class BooksService {
         filename,
       );
     }
-    
-    Object.assign(book, scalar);
-    if (genreIds) {
-      book.genres = await this.genreRepo.findBy({ id: In(genreIds) });
-    }
+
+    Object.assign(book, dto);
     return this.bookRepo.save(book);
   }
 
@@ -109,9 +91,6 @@ export class BooksService {
 
   async contarLibros() {
     const total = await this.bookRepo.count();
-
-    return {
-      total,
-    };
+    return { total };
   }
 }

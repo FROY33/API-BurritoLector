@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Genre } from '../../genres/entities/genre.entity';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Book {
@@ -29,8 +28,4 @@ export class Book {
 
   @CreateDateColumn()
   createdAt!: Date;
-
-  @ManyToMany(() => Genre, { cascade: true, eager: false })
-  @JoinTable()
-  genres!: Genre[];
 }
