@@ -40,7 +40,11 @@ export class BooksService {
     let coverImageUrl: string | null = null;
     if (coverImage) {
       const timestamp = Date.now();
-      const filename = `${timestamp}-${coverImage.originalname}`;
+      const safeName = coverImage.originalname
+        .replace(/\s+/g, '_')             
+        .replace(/[^a-zA-Z0-9._-]/g, ''); 
+
+      const filename = `${Date.now()}-${safeName}`;
       coverImageUrl = await this.supabaseStorageService.uploadFile(
         coverImage,
         'book-covers',
